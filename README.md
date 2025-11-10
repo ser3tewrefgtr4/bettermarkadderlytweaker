@@ -10,8 +10,6 @@
 
 <a href="https://github.com/individual55/MakuTweaker/issues">![Issues](https://img.shields.io/github/issues/individual55/MakuTweaker?style=flat)</a>
 
-![Downloads](https://img.shields.io/github/downloads/individual55/MakuTweaker/latest/total?style=flat)
-
 <a href="https://github.com/individual55/MakuTweaker/stargazers">![Stargazers](https://img.shields.io/github/stars/individual55/MakuTweaker?style=flat)</a>
 
 Source code of <a href="https://makutweaker.en.uptodown.com/windows"><strong>MakuTweaker</strong></a>
