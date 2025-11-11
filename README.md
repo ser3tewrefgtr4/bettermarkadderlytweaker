@@ -31,6 +31,8 @@ used for commercial gain.
 > Wanted the source code? You got it.  
 > Here it is, open and ready for you to explore 🚀
 
+By the way, according to Nikitori, the code was generated 99.9% by ChatGPT 😂
+
 ## Screenshots
 
 <img src="images/screenshots/1.png" alt="1">
