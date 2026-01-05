@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
@@ -10,6 +11,25 @@ namespace MakuTweakerNew
 {
     public partial class Telemetry : System.Windows.Controls.Page
     {
+        private sealed class RegistryValueChange
+        {
+            public RegistryValueChange(string keyPath, string valueName, object value, RegistryValueKind valueKind = RegistryValueKind.DWord)
+            {
+                KeyPath = keyPath;
+                ValueName = valueName;
+                Value = value;
+                ValueKind = valueKind;
+            }
+
+            public string KeyPath { get; }
+
+            public string ValueName { get; }
+
+            public object Value { get; }
+
+            public RegistryValueKind ValueKind { get; }
+        }
+
         private bool isLoaded = false;
 
         private bool isNotify = true;
@@ -17,6 +37,25 @@ namespace MakuTweakerNew
         private bool isbycheck = false;
 
         private MainWindow mw = (MainWindow)Application.Current.MainWindow;
+
+        private static void ApplyRegistryChanges(IEnumerable<RegistryValueChange> changes)
+        {
+            foreach (RegistryValueChange change in changes)
+            {
+                Registry.LocalMachine.CreateSubKey(change.KeyPath).SetValue(change.ValueName, change.Value, change.ValueKind);
+            }
+        }
+
+        private static void ApplyRegistryChangesSafe(IEnumerable<RegistryValueChange> changes)
+        {
+            try
+            {
+                ApplyRegistryChanges(changes);
+            }
+            catch (Exception)
+            {
+            }
+        }
 
         public Telemetry()
         {
@@ -35,23 +74,20 @@ namespace MakuTweakerNew
             Settings.Default.t1 = t1.IsOn;
             if (t1.IsOn)
             {
-                try
+                ApplyRegistryChangesSafe(new[]
                 {
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection").SetValue("AllowTelemetry", 0);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection").SetValue("AllowTelemetry", 0);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection").SetValue("MaxTelemetryAllowed", 0);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows NT\\CurrentVersion\\Software Protection Platform").SetValue("NoGenTicket", 1);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection").SetValue("DoNotShowFeedbackNotifications", 1);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat").SetValue("AITEnable", 0);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat").SetValue("AllowTelemetry", 0);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat").SetValue("DisableEngine", 1);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat").SetValue("DisableInventory", 1);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat").SetValue("DisablePCA", 1);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat").SetValue("DisableUAR", 1);
-                }
-                catch
-                {
-                }
+                    new RegistryValueChange("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection", "AllowTelemetry", 0),
+                    new RegistryValueChange("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection", "AllowTelemetry", 0),
+                    new RegistryValueChange("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection", "MaxTelemetryAllowed", 0),
+                    new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows NT\\CurrentVersion\\Software Protection Platform", "NoGenTicket", 1),
+                    new RegistryValueChange("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection", "DoNotShowFeedbackNotifications", 1),
+                    new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat", "AITEnable", 0),
+                    new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat", "AllowTelemetry", 0),
+                    new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat", "DisableEngine", 1),
+                    new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat", "DisableInventory", 1),
+                    new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat", "DisablePCA", 1),
+                    new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat", "DisableUAR", 1)
+                });
                 isNotify = false;
                 if (!isbycheck)
                 {
@@ -66,23 +102,20 @@ namespace MakuTweakerNew
             }
             else
             {
-                try
+                ApplyRegistryChangesSafe(new[]
                 {
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection").SetValue("AllowTelemetry", 1);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection").SetValue("AllowTelemetry", 1);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection").SetValue("MaxTelemetryAllowed", 1);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows NT\\CurrentVersion\\Software Protection Platform").SetValue("NoGenTicket", 0);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection").SetValue("DoNotShowFeedbackNotifications", 0);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat").SetValue("AITEnable", 1);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat").SetValue("AllowTelemetry", 1);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat").SetValue("DisableEngine", 0);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat").SetValue("DisableInventory", 0);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat").SetValue("DisablePCA", 0);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat").SetValue("DisableUAR", 0);
-                }
-                catch
-                {
-                }
+                    new RegistryValueChange("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection", "AllowTelemetry", 1),
+                    new RegistryValueChange("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection", "AllowTelemetry", 1),
+                    new RegistryValueChange("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection", "MaxTelemetryAllowed", 1),
+                    new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows NT\\CurrentVersion\\Software Protection Platform", "NoGenTicket", 0),
+                    new RegistryValueChange("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection", "DoNotShowFeedbackNotifications", 0),
+                    new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat", "AITEnable", 1),
+                    new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat", "AllowTelemetry", 1),
+                    new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat", "DisableEngine", 0),
+                    new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat", "DisableInventory", 0),
+                    new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat", "DisablePCA", 0),
+                    new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\AppCompat", "DisableUAR", 0)
+                });
                 isNotify = false;
                 if (!isbycheck)
                 {
@@ -104,11 +137,17 @@ namespace MakuTweakerNew
                 Settings.Default.t2 = t2.IsOn;
                 if (t2.IsOn)
                 {
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\appDiagnostics").SetValue("Value", "Deny", RegistryValueKind.String);
+                    ApplyRegistryChangesSafe(new[]
+                    {
+                        new RegistryValueChange("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\appDiagnostics", "Value", "Deny", RegistryValueKind.String)
+                    });
                 }
                 else
                 {
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\appDiagnostics").SetValue("Value", "Allow", RegistryValueKind.String);
+                    ApplyRegistryChangesSafe(new[]
+                    {
+                        new RegistryValueChange("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\appDiagnostics", "Value", "Allow", RegistryValueKind.String)
+                    });
                     isbycheck = true;
                     t1.IsOn = false;
                     isbycheck = false;
@@ -133,13 +172,19 @@ namespace MakuTweakerNew
                 Settings.Default.t3 = t3.IsOn;
                 if (t3.IsOn)
                 {
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\System").SetValue("UploadUserActivities", 0);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\System").SetValue("PublishUserActivities", 0);
+                    ApplyRegistryChangesSafe(new[]
+                    {
+                        new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\System", "UploadUserActivities", 0),
+                        new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\System", "PublishUserActivities", 0)
+                    });
                 }
                 else
                 {
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\System").SetValue("UploadUserActivities", 1);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\System").SetValue("PublishUserActivities", 1);
+                    ApplyRegistryChangesSafe(new[]
+                    {
+                        new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\System", "UploadUserActivities", 1),
+                        new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\System", "PublishUserActivities", 1)
+                    });
                     isbycheck = true;
                     t1.IsOn = false;
                     isbycheck = false;
@@ -164,12 +209,18 @@ namespace MakuTweakerNew
                 Settings.Default.t4 = t4.IsOn;
                 if (t4.IsOn)
                 {
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\WDI\\{9c5a40da-b965-4fc3-8781-88dd50a6299d}").SetValue("ScenarioExecutionEnabled", 0);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\DeviceHealthAttestationService").SetValue("EnableDeviceHealthAttestationService", 0);
+                    ApplyRegistryChangesSafe(new[]
+                    {
+                        new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\WDI\\{9c5a40da-b965-4fc3-8781-88dd50a6299d}", "ScenarioExecutionEnabled", 0),
+                        new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\DeviceHealthAttestationService", "EnableDeviceHealthAttestationService", 0)
+                    });
                 }
                 else
                 {
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Windows\\WDI\\{9c5a40da-b965-4fc3-8781-88dd50a6299d}").SetValue("ScenarioExecutionEnabled", 1);
+                    ApplyRegistryChangesSafe(new[]
+                    {
+                        new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Windows\\WDI\\{9c5a40da-b965-4fc3-8781-88dd50a6299d}", "ScenarioExecutionEnabled", 1)
+                    });
                     isbycheck = true;
                     t1.IsOn = false;
                     isbycheck = false;
@@ -194,13 +245,19 @@ namespace MakuTweakerNew
                 Settings.Default.t5 = t5.IsOn;
                 if (t5.IsOn)
                 {
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Microsoft\\InputPersonalization").SetValue("RestrictImplicitTextCollection", 0);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Microsoft\\InputPersonalization").SetValue("RestrictImplicitInkCollection", 0);
+                    ApplyRegistryChangesSafe(new[]
+                    {
+                        new RegistryValueChange("SOFTWARE\\Microsoft\\InputPersonalization", "RestrictImplicitTextCollection", 0),
+                        new RegistryValueChange("SOFTWARE\\Microsoft\\InputPersonalization", "RestrictImplicitInkCollection", 0)
+                    });
                 }
                 else
                 {
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Microsoft\\InputPersonalization").SetValue("RestrictImplicitTextCollection", 1);
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Microsoft\\InputPersonalization").SetValue("RestrictImplicitInkCollection", 1);
+                    ApplyRegistryChangesSafe(new[]
+                    {
+                        new RegistryValueChange("SOFTWARE\\Microsoft\\InputPersonalization", "RestrictImplicitTextCollection", 1),
+                        new RegistryValueChange("SOFTWARE\\Microsoft\\InputPersonalization", "RestrictImplicitInkCollection", 1)
+                    });
                     isbycheck = true;
                     t1.IsOn = false;
                     isbycheck = false;
@@ -225,11 +282,17 @@ namespace MakuTweakerNew
                 Settings.Default.t6 = t6.IsOn;
                 if (t6.IsOn)
                 {
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Speech").SetValue("AllowSpeechModelUpdate", 0);
+                    ApplyRegistryChangesSafe(new[]
+                    {
+                        new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Speech", "AllowSpeechModelUpdate", 0)
+                    });
                 }
                 else
                 {
-                    Registry.LocalMachine.CreateSubKey("SOFTWARE\\Policies\\Microsoft\\Speech").SetValue("AllowSpeechModelUpdate", 1);
+                    ApplyRegistryChangesSafe(new[]
+                    {
+                        new RegistryValueChange("SOFTWARE\\Policies\\Microsoft\\Speech", "AllowSpeechModelUpdate", 1)
+                    });
                     isbycheck = true;
                     t1.IsOn = false;
                     isbycheck = false;
